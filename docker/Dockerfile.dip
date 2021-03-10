@@ -1,0 +1,8 @@
+ARG DOCKER_RUBY_VERSION
+FROM ruby:${DOCKER_RUBY_VERSION}-alpine
+
+RUN gem update --system
+RUN apk add --update --no-cache less git build-base curl mc htop
+RUN touch ~/.rubocop.yml
+
+WORKDIR /app

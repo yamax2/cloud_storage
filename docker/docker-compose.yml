@@ -1,0 +1,50 @@
+version: '3.3'
+
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.dip
+      args:
+        DOCKER_RUBY_VERSION: $DOCKER_RUBY_VERSION
+      labels:
+        com.cloud_storage.ruby.version: $DOCKER_RUBY_VERSION
+    environment:
+      - BUNDLE_PATH=/bundle/${DOCKER_RUBY_VERSION}
+      - SSH_AUTH_SOCK=/ssh/auth/sock
+      - S3_ENDPOINT=$S3_ENDPOINT
+      - S3_BUCKET=$S3_BUCKET
+      - GCS_ENDPOINT=$GCS_ENDPOINT
+      - GCS_BUCKET=$GCS_BUCKET
+    volumes:
+      - ..:/app
+      - ssh-data:/ssh:ro
+      - bundler-data:/bundle
+    command: sh
+    depends_on:
+      - s3
+      - gcs
+
+  s3:
+    image: minio/minio:edge
+    volumes:
+      - ../uploads/s3:/data
+    command: server /data --json
+
+  gcs:
+    image: fsouza/fake-gcs-server
+    volumes:
+      - ../uploads/gcs:/data
+    expose:
+      - "8080"
+    entrypoint: >
+      /bin/fake-gcs-server -port 8080 -scheme http -external-url=http://gcs:8080 -public-host=gcs:8080 -filesystem-root /data
+
+volumes:
+  bundler-data:
+    external:
+      name: bundler_data
+
+  ssh-data:
+    external:
+      name: ssh_data

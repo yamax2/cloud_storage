@@ -1,0 +1,42 @@
+version: '2'
+
+environment:
+  DOCKER_RUBY_VERSION: 3.0
+  S3_ENDPOINT: http://s3:9000
+  S3_BUCKET: wallarm-devtmp-ipfeeds-presigned-urls-research
+  GCS_ENDPOINT: http://gcs:8080/
+  GCS_BUCKET: some-bucket
+
+compose:
+  files:
+    - docker/docker-compose.yml
+  project_name: cloud_storage
+
+interaction:
+  sh:
+    service: app
+
+  irb:
+    service: app
+    command: bundle exec pry
+
+  bundle:
+    service: app
+    command: bundle
+
+  rspec:
+    service: app
+    environment:
+    command: bundle exec rspec
+
+  rubocop:
+    service: app
+    command: bundle exec ./rubocop --display-style-guide --extra-details
+
+provision:
+  - ./docker/prepare_env.sh
+  - mkdir -p uploads/s3/$S3_BUCKET
+  - rm -rf uploads/gcs/$GCS_BUCKET
+  - mkdir -p uploads/gcs/$GCS_BUCKET
+  - docker volume create --name bundler_data
+  - dip bundle install
