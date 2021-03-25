@@ -6,15 +6,21 @@ RSpec.describe CloudStorage::Objects::Gcs do
   let!(:obj) { cli.upload_file(key: 'test_1.txt', file: file) }
 
   describe '#signed_url' do
-    subject(:url) { obj.signed_url(expires_in: 30, issuer: 'max@tretyakov-ma.ru', signing_key: key) }
-
     after { obj.delete! }
 
     # we cannot sign url for anonymous without a key
     let(:key) { OpenSSL::PKey::RSA.new(File.read('spec/fixtures/dummy.key')) }
 
-    it do
-      expect(url).to match(%r{\Ahttps://storage.googleapis.com/some-bucket/test_1.txt})
+    context 'when without options' do
+      subject(:url) { obj.signed_url(expires_in: 30, issuer: 'max@tretyakov-ma.ru', signing_key: key) }
+
+      it { is_expected.to match(%r{\A#{ENV['GCS_ENDPOINT']}#{ENV['GCS_BUCKET']}/test_1.txt}) }
+    end
+
+    context 'when with some internal options' do
+      subject(:url) { obj.signed_url(expires_in: 30, issuer: 'max@tretyakov-ma.ru', signing_key: key, version: :v2) }
+
+      it { is_expected.to match(%r{\Ahttps://storage.googleapis.com/#{ENV['GCS_BUCKET']}/test_1.txt}) }
     end
   end
 

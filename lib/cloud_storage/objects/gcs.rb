@@ -3,14 +3,24 @@
 module CloudStorage
   module Objects
     class Gcs < Base
+      def initialize(internal, uri:)
+        super internal
+        @uri = uri
+      end
+
       def key
         @internal.name
       end
 
       def signed_url(**opts)
-        expires = opts.delete(:expires_in)
+        opts[:expires] = opts.delete(:expires_in)
 
-        @internal.signed_url(expires: expires, **opts)
+        if @uri
+          opts[:scheme] = @uri.scheme
+          opts[:bucket_bound_hostname] = @uri.to_s.gsub(%r{\A#{@uri.scheme}://}, '')
+        end
+
+        @internal.signed_url version: :v4, **opts
       end
 
       alias name key
