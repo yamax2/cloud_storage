@@ -51,7 +51,14 @@ RSpec.describe CloudStorage do
 
   describe 'client' do
     context 'when gcs' do
-      let(:cli) { described_class::Client.new(:gcs, bucket: 'some-bucket', endpoint: ENV['GCS_ENDPOINT']) }
+      let(:cli) do
+        described_class::Client.new(
+          :gcs,
+          anonymous: true,
+          bucket: 'some-bucket',
+          endpoint: ENV['GCS_ENDPOINT']
+        )
+      end
 
       it { expect(cli.type).to eq(:gcs) }
     end
