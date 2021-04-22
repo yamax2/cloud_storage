@@ -17,6 +17,7 @@ module CloudStorage
         options = opts.dup
         bucket = options.delete(:bucket)
 
+        @anonymous = options.delete(:anonymous)
         @options = options
         @bucket = storage.bucket(bucket)
       end
@@ -67,10 +68,10 @@ module CloudStorage
 
       def storage
         @storage ||=
-          if options.key?(:credentials)
-            Google::Cloud::Storage.new(**options)
-          else
+          if @anonymous
             Google::Cloud::Storage.anonymous(**options)
+          else
+            Google::Cloud::Storage.new(**options)
           end
       end
     end
