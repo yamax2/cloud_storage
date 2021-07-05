@@ -26,6 +26,10 @@ module CloudStorage
       def find(key)
         raise 'not implemented'
       end
+
+      def delete_files(keys)
+        raise 'not implemented'
+      end
     end
   end
 end

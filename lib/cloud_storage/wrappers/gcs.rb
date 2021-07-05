@@ -15,11 +15,10 @@ module CloudStorage
         super
 
         options = opts.dup
-        bucket = options.delete(:bucket)
+        @bucket_name = options.delete(:bucket)
 
         @anonymous = options.delete(:anonymous)
         @options = options
-        @bucket = storage.bucket(bucket)
       end
 
       class Files
@@ -33,28 +32,41 @@ module CloudStorage
         def each
           return to_enum unless block_given?
 
-          @list.each { |item| yield Objects::Gcs.new(item, uri: @uri) }
+          # https://googleapis.dev/ruby/google-cloud-storage/latest/Google/Cloud/Storage/Bucket.html#files-instance_method
+          # https://googleapis.dev/ruby/google-cloud-storage/latest/Google/Cloud/Storage/File/List.html#all-instance_method
+          @list.all { |item| yield Objects::Gcs.new(item, uri: @uri) }
         end
       end
 
       def files(**opts)
-        Files.new @bucket.files(**opts), uri
+        Files.new bucket.files(**opts), uri
+      rescue ObjectNotFound
+        []
       end
 
       def exist?(key)
-        !@bucket.file(key).nil?
+        !bucket.file(key).nil?
+      rescue ObjectNotFound
+        false
       end
 
       def upload_file(key:, file:, **opts)
         Objects::Gcs.new \
-          @bucket.create_file(file.path, key, **opts),
+          bucket.create_file(file.path, key, **opts),
           uri: uri
       end
 
       def find(key)
-        raise ObjectNotFound, key if (obj = @bucket.file(key)).nil?
+        raise ObjectNotFound, key if (obj = bucket.file(key)).nil?
 
         Objects::Gcs.new(obj, uri: uri)
+      end
+
+      def delete_files(keys)
+        keys.each do |key|
+          bucket.file(key, skip_lookup: true).delete
+        rescue ObjectNotFound, Google::Cloud::NotFoundError
+        end
       end
 
       private
@@ -63,7 +75,7 @@ module CloudStorage
         return @uri if defined?(@uri)
         return @uri = nil if (endpoint = options[:endpoint]).nil?
 
-        @uri = URI.parse(endpoint).tap { |uri| uri.path = "/#{@bucket.id}" }
+        @uri = URI.parse(endpoint).tap { |uri| uri.path = "/#{bucket.id}" }
       end
 
       def storage
@@ -73,6 +85,18 @@ module CloudStorage
           else
             Google::Cloud::Storage.new(**options)
           end
+      end
+
+      # storage.bucket(name, skip_lookup: true) makes using library very hard,
+      # almost impossible
+      def bucket
+        @bucket ||= build_bucket
+      end
+
+      def build_bucket
+        bucket = storage.bucket(@bucket_name)
+        raise ObjectNotFound, @bucket_name unless bucket
+        bucket
       end
     end
   end
