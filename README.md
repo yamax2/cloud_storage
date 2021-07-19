@@ -1,15 +1,18 @@
 # CloudStorage
 
 Very simple wrapper for cloud storages (gcs, s3), methods:
-* list files
-* download file
-* file exist?
-* upload file
-* signed url
-* delete file
+
+- list files
+- download file
+- file exist?
+- upload file
+- signed url
+- delete file
 
 ## Installation
+
 Add to your Gemfile:
+
 ```ruby
 gem 'cloud_storage'
 ```
@@ -18,7 +21,9 @@ Gcs wrapper requires [google-cloud-storage](https://github.com/googleapis/google
 S3 wrapper requires [aws-sdk-s3](https://github.com/aws/aws-sdk-ruby)
 
 ## client
+
 gcs example:
+
 ```ruby
 require 'cloud_storage/wrappers/gcs'
 
@@ -32,6 +37,7 @@ cli = CloudStorage::Client.new(
 ```
 
 s3 (Aws, Yandex, Minio) example:
+
 ```ruby
 require 'cloud_storage/wrappers/s3'
 
@@ -46,25 +52,35 @@ cli = CloudStorage::Client.new(
 ```
 
 ### list files (enumerable):
+
 ```ruby
 > cli.files(prefix: 'some_dir').map { |f| [f.name, f.size] }
 => [["some_dir/test.txt", 22]]
 ```
 
 ### delete file:
+
 ```ruby
 > f = cli.files.first
 > f.delete!
 => nil
 ```
 
+### delete files:
+
+```ruby
+> cli.delete_files(['some_dir/test1.txt', 'some_dir/test2.txt'])
+```
+
 ### check file:
+
 ```ruby
 > cli.exist?('test.txt')
 => false
 ```
 
 ### upload file:
+
 ```ruby
 > f = cli.upload_file(key: 'test.txt', file: File.open('test.txt', 'rb'))
 > f.name
@@ -72,7 +88,9 @@ cli = CloudStorage::Client.new(
 ```
 
 ### signed url:
-`expires_in` - seconds, optional. You can also pass any arg specific for a gcs or s3 client:  
+
+`expires_in` - seconds, optional. You can also pass any arg specific for a gcs or s3 client:
+
 ```ruby
 # gcs
 > key = OpenSSL::PKey::RSA.new(File.read('dummy.key'))
@@ -85,6 +103,7 @@ cli = CloudStorage::Client.new(
 ```
 
 ### Download
+
 ```ruby
 > cli.find('test.txt').download.read
 => "This is a test download\n"
@@ -97,6 +116,7 @@ cli = CloudStorage::Client.new(
 ```
 
 ### Find
+
 ```ruby
 > cli.find('test.txt').to_s
 => "#<CloudStorage::Objects::S3:0x00007f778ed685c8>"

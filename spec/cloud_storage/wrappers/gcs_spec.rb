@@ -2,22 +2,34 @@
 
 RSpec.describe CloudStorage::Wrappers::Gcs do
   let(:cli) { gcs_new_client }
+  let(:cli_invalid_bucket) { gcs_new_client(bucket: 'invalid_bucket') }
 
   describe '#upload_file' do
-    subject(:uploaded) { cli.upload_file(key: 'test1.txt', file: file) }
+    context 'when good client' do
+      subject(:uploaded) { cli.upload_file(key: 'test1.txt', file: file) }
 
-    let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
+      let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
 
-    after { uploaded.delete! }
+      after { uploaded.delete! }
 
-    it do
-      expect { uploaded }.to change { cli.exist?('test1.txt') }.from(false).to(true)
+      it do
+        expect { uploaded }.to change { cli.exist?('test1.txt') }.from(false).to(true)
 
-      expect(uploaded).to have_attributes(
-        name: 'test1.txt',
-        key: 'test1.txt',
-        size: nil
-      )
+        expect(uploaded).to have_attributes(
+          name: 'test1.txt',
+          key: 'test1.txt',
+          size: nil
+        )
+      end
+    end
+
+    context 'when invalid bucket' do
+      let(:cli) { cli_invalid_bucket }
+      subject(:uploaded) { cli.upload_file(key: 'test1.txt', file: file) }
+
+      let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
+
+      it { expect { uploaded }.to raise_error(CloudStorage::ObjectNotFound, /invalid_bucket/) }
     end
   end
 
@@ -29,6 +41,12 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
     after { cli.files.each(&:delete!) }
 
     context 'when bucket is empty' do
+      it { is_expected.to be_empty }
+    end
+
+    context 'when client with invalid_bucket' do
+      let(:cli) { cli_invalid_bucket }
+
       it { is_expected.to be_empty }
     end
 
@@ -78,6 +96,12 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
         expect(cli.exist?('test4.txt')).to eq(false)
       end
     end
+
+    context 'when client with invalid_bucket' do
+      let(:cli) { cli_invalid_bucket }
+
+      it { expect(cli.exist?('file.txt')).to eq(false) }
+    end
   end
 
   describe '#find' do
@@ -95,6 +119,53 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
     context 'when file does not exist' do
       it do
         expect { cli.find('test6.txt') }.to raise_error(CloudStorage::ObjectNotFound, /test6.txt/)
+      end
+    end
+
+    context 'when invalid bucket' do
+      let(:cli) { cli_invalid_bucket }
+
+      it do
+        expect { cli.find('test6.txt') }.to raise_error(CloudStorage::ObjectNotFound, /invalid_bucket/)
+      end
+    end
+  end
+
+  describe '#delete_files' do
+    let(:files) { cli.files.to_a }
+
+    before { cli.files.each(&:delete!) }
+
+    after { cli.files.each(&:delete!) }
+
+    context 'when bucket is empty' do
+      it do
+        cli.delete_files(["file1.txt", "file2.txt"])
+        expect(files).to be_empty
+      end
+    end
+
+    context 'when client with invalid_bucket' do
+      let(:cli) { cli_invalid_bucket }
+
+      it do
+        cli.delete_files(["file1.txt", "file2.txt"])
+        expect(files).to be_empty
+      end
+    end
+
+    context 'when some files' do
+      let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
+
+      before do
+        cli.upload_file(key: 'file1.txt', file: file)
+        file.rewind
+        cli.upload_file(key: 'file2.txt', file: file)
+      end
+
+      it do
+        cli.delete_files(["file1.txt", "file2.txt"])
+        expect(files).to be_empty
       end
     end
   end

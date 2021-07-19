@@ -51,5 +51,9 @@ module CloudStorage
     def find(key)
       @wrapper.find(key)
     end
+
+    def delete_files(keys)
+      @wrapper.delete_files(keys)
+    end
   end
 end
