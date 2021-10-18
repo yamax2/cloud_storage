@@ -34,8 +34,7 @@ module CloudStorage
               resource: @resource,
               client: @client
           end
-
-          rescue Aws::S3::Errors::NoSuchBucket, Aws::S3::Errors::NotFound
+        rescue Aws::S3::Errors::NoSuchBucket, Aws::S3::Errors::NotFound
         end
       end
 
@@ -74,12 +73,13 @@ module CloudStorage
       end
 
       def delete_files(keys)
-        resource.bucket(@bucket_name).delete_objects({
-          delete: {
-            objects: keys.map { |key| {key: key} },
-            quiet: true
-          }
-        })
+        resource
+          .bucket(@bucket_name)
+          .delete_objects \
+            delete: {
+              objects: keys.map { |key| { key: key } },
+              quiet: true
+            }
       rescue Aws::S3::Errors::NoSuchBucket, Aws::S3::Errors::NotFound
       end
 

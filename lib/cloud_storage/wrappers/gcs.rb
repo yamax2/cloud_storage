@@ -96,6 +96,7 @@ module CloudStorage
       def build_bucket
         bucket = storage.bucket(@bucket_name)
         raise ObjectNotFound, @bucket_name unless bucket
+
         bucket
       end
     end

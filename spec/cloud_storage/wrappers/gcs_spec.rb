@@ -24,9 +24,9 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
     end
 
     context 'when invalid bucket' do
-      let(:cli) { cli_invalid_bucket }
       subject(:uploaded) { cli.upload_file(key: 'test1.txt', file: file) }
 
+      let(:cli) { cli_invalid_bucket }
       let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
 
       it { expect { uploaded }.to raise_error(CloudStorage::ObjectNotFound, /invalid_bucket/) }
@@ -140,7 +140,7 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
 
     context 'when bucket is empty' do
       it do
-        cli.delete_files(["file1.txt", "file2.txt"])
+        cli.delete_files(['file1.txt', 'file2.txt'])
         expect(files).to be_empty
       end
     end
@@ -149,7 +149,7 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       let(:cli) { cli_invalid_bucket }
 
       it do
-        cli.delete_files(["file1.txt", "file2.txt"])
+        cli.delete_files(['file1.txt', 'file2.txt'])
         expect(files).to be_empty
       end
     end
@@ -164,7 +164,7 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       end
 
       it do
-        cli.delete_files(["file1.txt", "file2.txt"])
+        cli.delete_files(['file1.txt', 'file2.txt'])
         expect(files).to be_empty
       end
     end
