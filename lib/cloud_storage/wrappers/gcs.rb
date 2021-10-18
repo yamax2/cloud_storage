@@ -52,7 +52,7 @@ module CloudStorage
 
       def upload_file(key:, file:, **opts)
         Objects::Gcs.new \
-          bucket.create_file(file.path, key, **opts),
+          bucket.create_file(file, key, **opts),
           uri: uri
       end
 

@@ -85,6 +85,11 @@ cli = CloudStorage::Client.new(
 > f = cli.upload_file(key: 'test.txt', file: File.open('test.txt', 'rb'))
 > f.name
 => 'test.txt'
+
+> stream = StringIO.new('test')
+> f = cli.upload_file(key: 'test.txt', file: stream)
+> f.name
+=> 'test.txt'
 ```
 
 ### signed url:

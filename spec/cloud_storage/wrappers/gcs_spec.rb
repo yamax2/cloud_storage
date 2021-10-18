@@ -10,10 +10,18 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
 
       let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
 
-      after { uploaded.delete! }
+      after do
+        file.close
+
+        uploaded.delete!
+      end
 
       it do
-        expect { uploaded }.to change { cli.exist?('test1.txt') }.from(false).to(true)
+        expect { uploaded }
+          .to change { cli.exist?('test1.txt') }
+          .from(false)
+          .to(true)
+          .and change { opened_tmp_files_count }.by(0)
 
         expect(uploaded).to have_attributes(
           name: 'test1.txt',
@@ -29,7 +37,33 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       let(:cli) { cli_invalid_bucket }
       let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
 
+      after { file.close }
+
       it { expect { uploaded }.to raise_error(CloudStorage::ObjectNotFound, /invalid_bucket/) }
+    end
+
+    context 'when a string io' do
+      subject(:uploaded) { cli.upload_file(key: 'test1.txt', file: io) }
+
+      let(:io) { StringIO.new('test') }
+
+      after { uploaded.delete! }
+
+      it do
+        expect { uploaded }
+          .to change { cli.exist?('test1.txt') }
+          .from(false)
+          .to(true)
+          .and change { opened_tmp_files_count }.by(0)
+
+        expect(uploaded).to have_attributes(
+          name: 'test1.txt',
+          key: 'test1.txt',
+          size: nil
+        )
+
+        expect(uploaded.download(StringIO.new).read).to eq('test')
+      end
     end
   end
 
@@ -59,6 +93,8 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
         cli.upload_file(key: 'another_test.txt', file: file)
       end
 
+      after { file.close }
+
       context 'when request without opts' do
         it do
           expect(files.size).to eq(2)
@@ -82,7 +118,11 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
       let!(:obj) { cli.upload_file(key: 'test3.txt', file: file) }
 
-      after { obj.delete! }
+      after do
+        file.close
+
+        obj.delete!
+      end
 
       it do
         expect(cli.exist?('test3.txt')).to eq(true)
@@ -109,7 +149,11 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
       let!(:obj) { cli.upload_file(key: 'test5.txt', file: file) }
 
-      after { obj.delete! }
+      after do
+        file.close
+
+        obj.delete!
+      end
 
       it do
         expect(cli.find('test5.txt').download.read).to eq("This is a test upload\n")
@@ -162,6 +206,8 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
         file.rewind
         cli.upload_file(key: 'file2.txt', file: file)
       end
+
+      after { file.close }
 
       it do
         cli.delete_files(['file1.txt', 'file2.txt'])

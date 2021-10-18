@@ -5,6 +5,8 @@ RSpec.describe CloudStorage::Objects::Gcs do
   let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
   let!(:obj) { cli.upload_file(key: 'test_1.txt', file: file) }
 
+  after { file.close }
+
   describe '#signed_url' do
     after { obj.delete! }
 

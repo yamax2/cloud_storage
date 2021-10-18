@@ -5,6 +5,8 @@ RSpec.describe CloudStorage::Objects::S3 do
   let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
   let!(:obj) { cli.upload_file(key: 'test_1.txt', file: file) }
 
+  after { file.close }
+
   describe '#signed_url' do
     subject(:url) { obj.signed_url(expires_in: 30) }
 
