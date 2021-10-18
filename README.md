@@ -107,6 +107,11 @@ cli = CloudStorage::Client.new(
 ```ruby
 > cli.find('test.txt').download.read
 => "This is a test download\n"
+
+s = StringIO.new
+> cli.find('test.txt').download(s)
+> s.read
+=> "This is a test download\n"
 ```
 
 ```ruby

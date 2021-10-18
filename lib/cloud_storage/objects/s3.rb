@@ -37,8 +37,10 @@ module CloudStorage
 
       private
 
-      def internal_download(path)
-        @resource.bucket(bucket_name).object(key).download_file(path)
+      def internal_download(local_file)
+        @resource.bucket(bucket_name).object(key).download_file(local_file)
+
+        local_file
       end
     end
   end
