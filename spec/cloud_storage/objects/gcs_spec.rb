@@ -45,7 +45,14 @@ RSpec.describe CloudStorage::Objects::Gcs do
     after { obj.delete! }
 
     context 'when default' do
-      subject(:content) { obj.download.read }
+      subject(:content) { tmp.read }
+
+      let(:tmp) { obj.download }
+
+      after do
+        tmp.close
+        tmp.unlink
+      end
 
       it do
         expect { content }.to change { opened_tmp_files_count }.by(1)
@@ -58,6 +65,11 @@ RSpec.describe CloudStorage::Objects::Gcs do
       subject(:content) { obj.download(tmp) }
 
       let(:tmp) { Tempfile.new }
+
+      after do
+        tmp.close
+        tmp.unlink
+      end
 
       it do
         tmp
