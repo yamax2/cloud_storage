@@ -5,6 +5,8 @@ RSpec.describe CloudStorage::Objects::Gcs do
   let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
   let!(:obj) { cli.upload_file(key: 'test_1.txt', file: file) }
 
+  after { file.close }
+
   describe '#signed_url' do
     after { obj.delete! }
 
@@ -45,16 +47,50 @@ RSpec.describe CloudStorage::Objects::Gcs do
     after { obj.delete! }
 
     context 'when default' do
+      subject(:content) { tmp.read }
+
+      let(:tmp) { obj.download }
+
+      after do
+        tmp.close
+        tmp.unlink
+      end
+
       it do
-        expect(obj.download.read).to eq("This is a test upload\n")
+        expect { content }.to change { opened_tmp_files_count }.by(1)
+
+        expect(content).to eq("This is a test upload\n")
       end
     end
 
     context 'when download to a custom tmp' do
+      subject(:content) { obj.download(tmp) }
+
       let(:tmp) { Tempfile.new }
 
+      after do
+        tmp.close
+        tmp.unlink
+      end
+
       it do
-        expect { obj.download(tmp) }.to change(tmp, :read).from('').to("This is a test upload\n")
+        tmp
+
+        expect { content }
+          .to change(tmp, :read)
+          .from('')
+          .to("This is a test upload\n")
+          .and change { opened_tmp_files_count }.by(0)
+      end
+    end
+
+    context 'when download to a string io' do
+      subject(:content) { obj.download(StringIO.new).read }
+
+      it do
+        expect { content }.not_to(change { opened_tmp_files_count })
+
+        expect(content).to eq("This is a test upload\n")
       end
     end
   end

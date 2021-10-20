@@ -16,6 +16,7 @@ require 'cloud_storage'
 require 'cloud_storage/wrappers/gcs'
 require 'cloud_storage/wrappers/s3'
 
+require_relative 'rspec_helpers/common'
 require_relative 'rspec_helpers/s3'
 require_relative 'rspec_helpers/gcs'
 
@@ -27,6 +28,7 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
+  config.include RSpecHelpers::Common
   config.include RSpecHelpers::Gcs
   config.include RSpecHelpers::S3
 end

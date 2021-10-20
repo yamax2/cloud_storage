@@ -32,8 +32,8 @@ module CloudStorage
 
       private
 
-      def internal_download(path)
-        @internal.download(path)
+      def internal_download(local_file)
+        @internal.download(local_file)
       end
     end
   end

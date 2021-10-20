@@ -34,8 +34,7 @@ module CloudStorage
               resource: @resource,
               client: @client
           end
-
-          rescue Aws::S3::Errors::NoSuchBucket, Aws::S3::Errors::NotFound
+        rescue Aws::S3::Errors::NoSuchBucket, Aws::S3::Errors::NotFound
         end
       end
 
@@ -50,7 +49,7 @@ module CloudStorage
       def upload_file(key:, file:, **opts)
         obj = resource.bucket(@bucket_name).object(key)
 
-        return unless obj.upload_file(file.path, **opts)
+        return unless upload_file_or_io(obj, file, **opts)
 
         Objects::S3.new \
           obj,
@@ -74,12 +73,13 @@ module CloudStorage
       end
 
       def delete_files(keys)
-        resource.bucket(@bucket_name).delete_objects({
-          delete: {
-            objects: keys.map { |key| {key: key} },
-            quiet: true
-          }
-        })
+        resource
+          .bucket(@bucket_name)
+          .delete_objects \
+            delete: {
+              objects: keys.map { |key| { key: key } },
+              quiet: true
+            }
       rescue Aws::S3::Errors::NoSuchBucket, Aws::S3::Errors::NotFound
       end
 
@@ -91,6 +91,14 @@ module CloudStorage
 
       def resource
         @resource ||= Aws::S3::Resource.new(@options)
+      end
+
+      def upload_file_or_io(obj, file_or_io, **opts)
+        if file_or_io.respond_to?(:path)
+          obj.upload_file(file_or_io.path, **opts)
+        else
+          obj.upload_stream(**opts) { |write_stream| IO.copy_stream(file_or_io, write_stream) }
+        end
       end
     end
   end

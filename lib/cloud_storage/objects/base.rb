@@ -14,10 +14,7 @@ module CloudStorage
       end
 
       def download(local_file = Tempfile.new)
-        internal_download(local_file.path)
-
-        local_file.rewind
-        local_file
+        internal_download(local_file).tap(&:rewind)
       end
 
       def signed_url(**opts)
@@ -30,7 +27,7 @@ module CloudStorage
 
       private
 
-      def internal_download(path)
+      def internal_download(local_file)
         raise 'not implemented'
       end
     end

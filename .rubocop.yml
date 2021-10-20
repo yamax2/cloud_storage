@@ -36,3 +36,6 @@ RSpec/ExampleLength:
 
 RSpec/NestedGroups:
   Max: 4
+
+Lint/SuppressedException:
+  Enabled: false
