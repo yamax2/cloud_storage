@@ -141,16 +141,18 @@ RSpec.describe CloudStorage::Wrappers::S3 do
     context 'when file exists' do
       let(:file) { File.open('spec/fixtures/test.txt', 'rb') }
       let!(:obj) { cli.upload_file(key: 'test5.txt', file: file) }
+      let(:tmp) { cli.find('test5.txt').download }
 
       after do
         file.close
 
         obj.delete!
+
+        tmp.close
+        tmp.unlink
       end
 
-      it do
-        expect(cli.find('test5.txt').download.read).to eq("This is a test upload\n")
-      end
+      it { expect(tmp.read).to eq("This is a test upload\n") }
     end
 
     context 'when file does not exists' do

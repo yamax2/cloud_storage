@@ -13,7 +13,7 @@ module CloudStorage
         @internal.size
       end
 
-      def download(local_file = Tempfile.new)
+      def download(local_file = Tempfile.new('cloud', binmode: true))
         internal_download(local_file).tap(&:rewind)
       end
 
