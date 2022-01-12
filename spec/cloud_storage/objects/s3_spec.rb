@@ -62,6 +62,16 @@ RSpec.describe CloudStorage::Objects::S3 do
 
         expect(content).to eq("This is a test upload\n")
       end
+
+      context 'when 6mb file' do
+        let(:file) { File.open('spec/fixtures/6mb.bin', 'rb') }
+
+        it do
+          expect { content }.not_to(change { opened_tmp_files_count })
+
+          expect(content.size).to eq(6_000_000)
+        end
+      end
     end
 
     context 'when download to a custom tmp' do
@@ -82,6 +92,20 @@ RSpec.describe CloudStorage::Objects::S3 do
           .from('')
           .to("This is a test upload\n")
           .and change { opened_tmp_files_count }.by(0)
+      end
+
+      context 'when 6mb file' do
+        let(:file) { File.open('spec/fixtures/6mb.bin', 'rb') }
+
+        it do
+          tmp
+
+          expect { content }
+            .to change(tmp, :size)
+            .from(0)
+            .to(6_000_000)
+            .and change { opened_tmp_files_count }.by(0)
+        end
       end
     end
   end
