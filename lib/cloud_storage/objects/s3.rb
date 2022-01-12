@@ -38,7 +38,7 @@ module CloudStorage
       private
 
       def internal_download(local_file)
-        @resource.bucket(bucket_name).object(key).download_file(local_file)
+        @client.get_object(response_target: local_file, bucket: bucket_name, key: key)
 
         local_file
       end
