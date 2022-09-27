@@ -23,6 +23,10 @@ module CloudStorage
         @internal.signed_url version: :v4, **opts
       end
 
+      def url
+        @internal.url
+      end
+
       alias name key
 
       def delete!

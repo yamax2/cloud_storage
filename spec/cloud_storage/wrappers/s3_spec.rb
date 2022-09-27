@@ -23,7 +23,7 @@ RSpec.describe CloudStorage::Wrappers::S3 do
           name: 'test1.txt',
           key: 'test1.txt',
           size: 22,
-          bucket_name: ENV['S3_BUCKET']
+          bucket_name: ENV.fetch('S3_BUCKET')
         )
       end
     end
@@ -57,7 +57,7 @@ RSpec.describe CloudStorage::Wrappers::S3 do
           name: 'test1.txt',
           key: 'test1.txt',
           size: 4,
-          bucket_name: ENV['S3_BUCKET']
+          bucket_name: ENV.fetch('S3_BUCKET')
         )
       end
     end
@@ -118,7 +118,7 @@ RSpec.describe CloudStorage::Wrappers::S3 do
       end
 
       it do
-        expect(cli.exist?('test3.txt')).to eq(true)
+        expect(cli.exist?('test3.txt')).to be(true)
       end
     end
 
@@ -126,14 +126,14 @@ RSpec.describe CloudStorage::Wrappers::S3 do
       before { cli.files.each(&:delete!) }
 
       it do
-        expect(cli.exist?('test4.txt')).to eq(false)
+        expect(cli.exist?('test4.txt')).to be(false)
       end
     end
 
     context 'when client with invalid_bucket' do
       let(:cli) { cli_invalid_bucket }
 
-      it { expect(cli.exist?('file.txt')).to eq(false) }
+      it { expect(cli.exist?('file.txt')).to be(false) }
     end
   end
 

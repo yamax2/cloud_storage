@@ -5,7 +5,7 @@ module RSpecHelpers
     def gcs_new_client(bucket: 'some-bucket')
       CloudStorage::Client.new(
         :gcs,
-        endpoint: ENV['GCS_ENDPOINT'],
+        endpoint: ENV.fetch('GCS_ENDPOINT'),
         bucket: bucket,
         anonymous: true
       )

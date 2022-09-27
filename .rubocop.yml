@@ -18,6 +18,10 @@ Layout/LineLength:
 Style/Documentation:
   Enabled: false
 
+Style/RedundantInitialize:
+  Exclude:
+    - "lib/cloud_storage/wrappers/base.rb"
+
 RSpec/MultipleExpectations:
   Enabled: false
 
