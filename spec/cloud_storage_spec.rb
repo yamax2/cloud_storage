@@ -56,7 +56,7 @@ RSpec.describe CloudStorage do
           :gcs,
           anonymous: true,
           bucket: 'some-bucket',
-          endpoint: ENV['GCS_ENDPOINT']
+          endpoint: ENV.fetch('GCS_ENDPOINT')
         )
       end
 

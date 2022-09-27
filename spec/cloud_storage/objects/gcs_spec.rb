@@ -16,13 +16,13 @@ RSpec.describe CloudStorage::Objects::Gcs do
     context 'when without options' do
       subject(:url) { obj.signed_url(expires_in: 30, issuer: 'max@tretyakov-ma.ru', signing_key: key) }
 
-      it { is_expected.to match(%r{\A#{ENV['GCS_ENDPOINT']}#{ENV['GCS_BUCKET']}/test_1.txt}) }
+      it { is_expected.to match(%r{\A#{ENV.fetch('GCS_ENDPOINT')}#{ENV.fetch('GCS_BUCKET')}/test_1.txt}) }
     end
 
     context 'when with some internal options' do
       subject(:url) { obj.signed_url(expires_in: 30, issuer: 'max@tretyakov-ma.ru', signing_key: key, version: :v2) }
 
-      it { is_expected.to match(%r{\Ahttps://storage.googleapis.com/#{ENV['GCS_BUCKET']}/test_1.txt}) }
+      it { is_expected.to match(%r{\Ahttps://storage.googleapis.com/#{ENV.fetch('GCS_BUCKET')}/test_1.txt}) }
     end
   end
 

@@ -13,7 +13,7 @@ RSpec.describe CloudStorage::Objects::S3 do
     after { obj.delete! }
 
     it do
-      expect(url).to match(%r{\A#{ENV['S3_ENDPOINT']}/#{ENV['S3_BUCKET']}/test_1.txt})
+      expect(url).to match(%r{\A#{ENV.fetch('S3_ENDPOINT')}/#{ENV.fetch('S3_BUCKET')}/test_1.txt})
     end
   end
 
@@ -22,7 +22,7 @@ RSpec.describe CloudStorage::Objects::S3 do
 
     after { obj.delete! }
 
-    it { is_expected.to eq("#{ENV['S3_ENDPOINT']}/#{ENV['S3_BUCKET']}/test_1.txt") }
+    it { is_expected.to eq("#{ENV.fetch('S3_ENDPOINT')}/#{ENV.fetch('S3_BUCKET')}/test_1.txt") }
   end
 
   describe '#delete!' do

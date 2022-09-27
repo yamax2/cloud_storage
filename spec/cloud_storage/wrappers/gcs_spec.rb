@@ -125,7 +125,7 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       end
 
       it do
-        expect(cli.exist?('test3.txt')).to eq(true)
+        expect(cli.exist?('test3.txt')).to be(true)
       end
     end
 
@@ -133,14 +133,14 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
       before { cli.files.each(&:delete!) }
 
       it do
-        expect(cli.exist?('test4.txt')).to eq(false)
+        expect(cli.exist?('test4.txt')).to be(false)
       end
     end
 
     context 'when client with invalid_bucket' do
       let(:cli) { cli_invalid_bucket }
 
-      it { expect(cli.exist?('file.txt')).to eq(false) }
+      it { expect(cli.exist?('file.txt')).to be(false) }
     end
   end
 
