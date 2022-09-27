@@ -26,6 +26,14 @@ RSpec.describe CloudStorage::Objects::Gcs do
     end
   end
 
+  describe '#url' do
+    subject(:url) { obj.url }
+
+    after { obj.delete! }
+
+    it { is_expected.to eq('https://storage.googleapis.com/some-bucket/test_1.txt') }
+  end
+
   describe '#delete!' do
     context 'when file exists' do
       it do
