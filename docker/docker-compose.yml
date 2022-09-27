@@ -11,14 +11,12 @@ services:
         com.cloud_storage.ruby.version: $DOCKER_RUBY_VERSION
     environment:
       - BUNDLE_PATH=/bundle/${DOCKER_RUBY_VERSION}
-      - SSH_AUTH_SOCK=/ssh/auth/sock
       - S3_ENDPOINT=$S3_ENDPOINT
       - S3_BUCKET=$S3_BUCKET
       - GCS_ENDPOINT=$GCS_ENDPOINT
       - GCS_BUCKET=$GCS_BUCKET
     volumes:
       - ..:/app
-      - ssh-data:/ssh:ro
       - bundler-data:/bundle
     command: sh
     depends_on:
@@ -44,7 +42,3 @@ volumes:
   bundler-data:
     external:
       name: bundler_data
-
-  ssh-data:
-    external:
-      name: ssh_data

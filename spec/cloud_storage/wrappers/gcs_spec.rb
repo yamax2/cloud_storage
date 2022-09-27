@@ -26,7 +26,7 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
         expect(uploaded).to have_attributes(
           name: 'test1.txt',
           key: 'test1.txt',
-          size: nil
+          size: file.size
         )
       end
     end
@@ -59,7 +59,7 @@ RSpec.describe CloudStorage::Wrappers::Gcs do
         expect(uploaded).to have_attributes(
           name: 'test1.txt',
           key: 'test1.txt',
-          size: nil
+          size: io.size
         )
 
         expect(uploaded.download(StringIO.new).read).to eq('test')
