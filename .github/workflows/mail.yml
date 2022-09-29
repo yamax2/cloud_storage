@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        ruby-version: ["2.5", "2.7", "3.0", "3.1"]
+
+    services:
+      s3:
+        image: minio/minio:edge
+        options: >-
+          --entrypoint "sh -c 'mkdir -p /data/test && /usr/bin/minio server /data --json'"
+        # command: >
+        #   -c 'mkdir -p /data/test && /usr/bin/minio server /data --json'
+        ports:
+          - 9000/tcp
+      gcs:
+        image: fsouza/fake-gcs-server
+        options: >-
+          --entrypoint "sh -c 'mkdir -p /data/some-bucket && /bin/fake-gcs-server -port 8080 -scheme http -external-url=http://localhost:8080 -public-host=localhost:8080 -filesystem-root /data'"
+        # command: >
+        #   -c 'mkdir -p /data/some-bucket && /bin/fake-gcs-server -port 8080 -scheme http -external-url=http://localhost:8080 -public-host=localhost:8080 -filesystem-root /data'
+        ports:
+          - 8080/tcp
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+
+      - name: Rubocop
+        run: bundle exec ./rubocop --display-style-guide --extra-details
+
+      - name: Tests
+        run: bundle exec rspec
+        env:
+          S3_ENDPOINT: http://localhost:{{ job.services.s3.ports['9000'] }}
+          S3_BUCKET: test
+          GCS_ENDPOINT: http://localhost:{{ job.services.gcs.ports['8080'] }}/
+          GCS_BUCKET: some-bucket
